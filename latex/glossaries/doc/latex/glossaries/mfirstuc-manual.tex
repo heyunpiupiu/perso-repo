@@ -1,0 +1,267 @@
+\documentclass{nlctdoc}
+
+\usepackage{alltt}
+\usepackage{mfirstuc}
+\usepackage{pifont}
+\usepackage[utf8]{inputenc}
+\ifpdf
+\usepackage[T1]{fontenc}
+\fi
+\usepackage{cmap}
+\usepackage[colorlinks,
+            bookmarks,
+            hyperindex=false,
+            pdfauthor={Nicola L.C. Talbot},
+            pdftitle={mfirstuc.sty: uppercasing first letter},
+            pdfkeywords={LaTeX,package,uppercase}]{hyperref}
+
+\begin{document}
+ \title{mfirstuc.sty v1.09: 
+uppercasing first letter}
+ \author{Nicola L.C. Talbot\\[10pt]
+Dickimaw Books\\
+\url{http://www.dickimaw-books.com/}}
+
+ \date{2014-07-30}
+ \maketitle
+
+The \styfmt{glossaries} bundle includes the package 
+\sty{mfirstuc} which provides the command:
+\begin{definition}[\DescribeMacro{\makefirstuc}]
+\cs{makefirstuc}\marg{stuff}
+\end{definition}
+This makes the first object of
+\meta{stuff} uppercase unless \meta{stuff} starts with a control
+sequence followed by a non-empty group, in which case the first
+object in the group is converted to uppercase.
+\textbf{No expansion is performed on the argument.}
+
+Examples:
+\begin{itemize}
+\item |\makefirstuc{abc}| produces \makefirstuc{abc}.
+
+\item |\makefirstuc{\emph{abc}}| produces \makefirstuc{\emph{abc}}
+(\ics{MakeUppercase} has been applied to the letter \qt{a} rather
+than \cs{emph}). Note however that
+\begin{verbatim}
+\makefirstuc{{\em abc}}
+\end{verbatim}
+produces \makefirstuc{{\em abc}} (first object is |{\em abc}| so
+equivalent to |\MakeUppercase{\em abc}|), and
+\begin{verbatim}
+{\makefirstuc{\em abc}}
+\end{verbatim}
+produces {\makefirstuc{\em abc}} (|\em| doesn't have an argument
+therefore first object is |\em| and so is equivalent to
+|{\MakeUppercase{\em}abc}|).
+
+\item |\makefirstuc{{\'a}bc}| produces \makefirstuc{{\'a}bc}.
+
+\item |\makefirstuc{\ae bc}| produces \makefirstuc{\ae bc}.
+
+\item |\makefirstuc{{\ae}bc}| produces \makefirstuc{{\ae}bc}.
+
+\item |\makefirstuc{{ä}bc}| produces \makefirstuc{{ä}bc}.
+
+\end{itemize}
+Note that non-Latin or accented characters appearing at the
+start of the text must be placed in a group (even if you are
+using the \sty{inputenc} package) due to expansion issues.
+
+\begin{important}
+In version 1.02 of \styfmt{mfirstuc}, a bug fix resulted in a change
+in output if the first object is a control sequence followed by
+an empty group. Prior to version 1.02, |\makefirstuc{\ae{}bc}|
+produced \ae Bc. However as from version 1.02, it now produces
+\AE bc.
+\end{important}
+
+Note also that
+\begin{verbatim}
+\newcommand{\abc}{abc}
+\makefirstuc{\abc}
+\end{verbatim}
+produces: ABC. This is because the first object in the argument of
+\cs{makefirstuc} is \cs{abc}, so it does |\MakeUppercase{\abc}|.
+Whereas:
+\begin{verbatim}
+\newcommand{\abc}{abc}
+\expandafter\makefirstuc\expandafter{\abc}
+\end{verbatim}
+produces: Abc. There is a short cut command which will do this:
+\begin{definition}[\DescribeMacro{\xmakefirstuc}]
+\cs{xmakefirstuc}\marg{stuff}
+\end{definition}
+This is equivalent to \cs{expandafter}\cs{makefirstuc}\cs{expandafter}\marg{stuff}. So
+\begin{verbatim}
+\newcommand{\abc}{abc}
+\xmakefirstuc{\abc}
+\end{verbatim}
+produces: 
+\newcommand{\abc}{abc}%
+\xmakefirstuc{\abc}.
+
+\begin{important}
+\cs{xmakefirstuc} only performs one level expansion on the
+\emph{first} object in its argument. It does not fully expand the entire
+argument.
+\end{important}
+
+If you use \styfmt{mfirstuc} without the \sty{glossaries} package, 
+the standard \cs{MakeUppercase} command is used. If used with
+\sty{glossaries}, \ics{MakeTextUppercase} (defined by \sty{textcase}
+the package) is used instead. If you are using \styfmt{mfirstuc}
+without the \styfmt{glossaries} package and want to use
+\ics{MakeTextUppercase} instead, you can redefine
+\begin{definition}[\DescribeMacro\glsmakefirstuc]
+\cs{glsmakefirstuc}\marg{text}
+\end{definition}
+For example:
+\begin{verbatim}
+\renewcommand{\glsmakefirstuc}[1]{\MakeTextUppercase #1}
+\end{verbatim}
+Remember to also load \sty{textcase} (\styfmt{glossaries} loads this
+automatically).
+
+New to mfirstuc v1.06:
+\begin{definition}[\DescribeMacro{\capitalisewords}]
+\cs{capitalisewords}\marg{text}
+\end{definition}
+This command apply \ics{makefirstuc} to each word in \meta{text}
+where the space character is used as the word separator. Note that
+it has to be a plain space character, not another form of space,
+such as \verb|~| or \cs{space}. Note that no expansion is performed
+on \meta{text}.
+
+\begin{definition}[\DescribeMacro{\xcapitalisewords}]
+\cs{xcapitalisewords}\marg{text}
+\end{definition}
+This is a short cut for
+\cs{expandafter}\cs{capitalisewords}\cs{expandafter}\marg{text}.
+
+\begin{important}
+If you are using \sty{hyperref} and want to use \cs{capitalisewords}
+or \ics{makefirstuc} (or \cs{xcapitalisewords}\slash\cs{xmakefirstuc}) 
+in a section heading, the PDF bookmarks won't be able to use the command 
+as it's not expandable, so you will get a warning that looks like:
+\begin{verbatim}
+Package hyperref Warning: Token not allowed in a PDF string 
+(PDFDocEncoding):
+(hyperref)                removing `\capitalisewords'
+\end{verbatim}
+If you want to provide an alternative for the PDF bookmark, you can
+use \sty{hyperref}'s \ics{texorpdfstring} command. See the
+\sty{hyperref} manual for further details.
+\end{important}
+
+Examples:
+\begin{enumerate}
+\item 
+\begin{verbatim}
+\capitalisewords{a book of rhyme.}
+\end{verbatim}
+produces:
+\capitalisewords{a book of rhyme.}
+
+\item
+\begin{verbatim}
+\capitalisewords{a book\space of rhyme.}
+\end{verbatim}
+produces:
+\capitalisewords{a book\space of rhyme.}
+
+\item
+\begin{verbatim}
+\newcommand{\mytitle}{a book\space of rhyme.}
+\capitalisewords{\mytitle}
+\end{verbatim}
+produces:
+\newcommand{\mytitle}{a book\space of rhyme.}
+\capitalisewords{\mytitle}
+(No expansion is performed on \cs{mytitle}, so \meta{text}
+consists of just one ``word''.) Compare with next example:
+
+\item
+\begin{verbatim}
+\newcommand{\mytitle}{a book\space of rhyme.}
+\xcapitalisewords{\mytitle}
+\end{verbatim}
+produces:
+\xcapitalisewords{\mytitle}
+
+\end{enumerate}
+
+As from v1.09, you can specify words which shouldn't be capitalised unless they
+occur at the start of \meta{text} using:
+\begin{definition}[\DescribeMacro]
+\cs{MFUnocap}\marg{word}
+\end{definition}
+This only has a local effect. The global version is:
+\begin{definition}[\DescribeMacro]
+\cs{gMFUnocap}\marg{word}
+\end{definition}
+
+For example:
+\begin{verbatim}
+\capitalisewords{the wind in the willows}
+
+\MFUnocap{in}%
+\MFUnocap{the}%
+
+\capitalisewords{the wind in the willows}
+\end{verbatim}
+produces:
+\begin{display}
+\capitalisewords{the wind in the willows}
+
+\MFUnocap{in}%
+\MFUnocap{the}%
+
+\capitalisewords{the wind in the willows}
+\end{display}
+The list of words that shouldn't be capitalised can be cleared using
+\begin{definition}[\DescribeMacro\MFUclear]
+\cs{MFUclear}
+\end{definition}
+
+The package \sty{mfirstuc-english} loads \sty{mfirstuc} and uses
+\cs{MFUnocap} to add common English articles and conjunctions, such
+as ``a'', ``an'', ``and'', ``but''. You may want to add other
+words to this list, such as prepositions, but as there's some
+dispute over whether prepositions should be capitalised, I~don't
+intend to add them to this package.
+
+If you want to write a similar package for another language, all you
+need to do is create a file with the extension \texttt{.sty}
+that starts with
+\begin{verbatim}
+\NeedsTeXFormat{LaTeX2e}
+\end{verbatim}
+The next line should identify the package. For example, if you have
+called the file \texttt{mfirstuc-french.sty} then you need:
+\begin{verbatim}
+\ProvidesPackage{mfirstuc-french}
+\end{verbatim}
+It's a good idea to also add a version in the final optional
+argument, for example:
+\begin{verbatim}
+\ProvidesPackage{mfirstuc-french}[2014/07/30 v1.0]
+\end{verbatim}
+Next load \sty{mfirstuc}:
+\begin{verbatim}
+\RequirePackage{mfirstuc}
+\end{verbatim}
+Now add all your \cs{MFUnocap} commands. For example:
+\begin{verbatim}
+\MFUnocap{de}
+\end{verbatim}
+At the end of the file add:
+\begin{verbatim}
+\endinput
+\end{verbatim}
+
+Put the file somewhere on \TeX's path, and now you can use this
+package in your document. You might also consider uploading it
+to CTAN in case other users find it useful.
+
+\end{document}
